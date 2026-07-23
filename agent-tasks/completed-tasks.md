@@ -35,3 +35,9 @@
 - **Completed:** 2026-07-23T14:33:54Z
 - **Files modified:** SPEC.md
 - **Commit:** `1ad948b`
+
+## T-007 (sprint 0)
+- **Description:** SPEC §8 canonical layout (matches template/ name-for-name) + §9 validation design (arms A0/A1/A2/A3, metrics incl. tokens-in-context/step + invariant-violations, μ̂ + gap-closure, explicit pass/falsify criteria, threats to validity) + §10 roadmap (s1 runtime, s2 validation) & six open questions. SPEC.md now complete (§0–§10, no placeholders).
+- **Completed:** 2026-07-23T14:35:34Z
+- **Files modified:** SPEC.md
+- **Commit:** `cbe94f2`

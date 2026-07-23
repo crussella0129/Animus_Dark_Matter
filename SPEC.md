@@ -617,23 +617,117 @@ FSM × capability-lattice and the MCP reference gate as its invariants.
 
 ## 8. Canonical Directory Layout
 
-_The canonical on-disk layout (`00_identity/ … 04_artifacts/`) that the
-`template/` scaffold instantiates._
+A Dark Matter **workspace** instantiates the five layers on disk exactly as
+follows. The `template/` scaffold (Component C) ships this layout name-for-name;
+`scripts/verify-spec.sh` checks the two agree.
 
-<!-- populated by T-007 -->
+```
+<workspace>/
+├── 00_identity/
+│   └── IDENTITY.md            # L0 — system identity & execution constraints (pinned, read-only)
+├── 01_routing/
+│   └── ROUTING.md             # L1 — routing matrix: problem signature → stage sequence + ref bindings
+├── 02_stages/
+│   ├── 00_example_stage/
+│   │   └── CONTRACT.md        # L2 — one stage's contract: Inputs · Process · Outputs
+│   ├── 01_.../
+│   │   └── CONTRACT.md
+│   └── …                      #      numbered, ordered stages
+├── 03_reference/              # L3 — knowledge vault; served ONLY via MCP, never read directly
+│   └── <target>/…             #      chunked clean-markdown, addressed  ref://<target>/…#<chunk>
+└── 04_artifacts/              # L4 — the ONLY writable layer; per-stage outputs; inter-stage channel
+    └── <stage>/output/…
+```
+
+The fixed names — `00_identity/`, `01_routing/`, `02_stages/`, `03_reference/`,
+`04_artifacts/`, and the layer files `IDENTITY.md`, `ROUTING.md`, `CONTRACT.md` —
+are normative. Stage folder names beyond `00_example_stage/` are workspace-
+specific and set by the routing matrix.
 
 ## 9. Validation Design — Measuring the Multiplier
 
-_A falsifiable experiment for the multiplier: experimental arms (M_small alone,
-M_small+DM, M_frontier ceiling), metrics (success rate, tokens-in-context/step,
-invariant-violation count), a task set over `T*`, and explicit pass/falsify
-criteria._
+The multiplier (§0.2) is an empirical claim. This section specifies the
+experiment that would **confirm or falsify** it. Execution is deferred to **s2**
+(it needs the s1 runtime + a local-model backend); the *design* is fixed now so
+the framework is falsifiable from the outset.
 
-<!-- populated by T-007 -->
+### 9.1 Hypothesis
+**H1 (LIM).** On the target task class `T*`,
+`cap_T*(M_small, S_DM) ≫ cap_T*(M_small, ∅)` and approaches
+`cap_T*(M_frontier, ∅)`.
+
+### 9.2 Experimental arms
+| Arm | Configuration | Role |
+|-----|---------------|------|
+| **A0** | `M_small` alone (no structure) | baseline floor |
+| **A1** | `M_small` + `S_DM` | **treatment** |
+| **A2** | `M_frontier` alone | ceiling |
+| A3 *(optional)* | `M_frontier` + `S_DM` | does structure still help at the top, or plateau? |
+
+Controls: identical `M_small` weights/quantization across A0 and A1; identical
+task set and success oracle across all arms; blind scoring where feasible.
+
+### 9.3 Task set
+A fixed, pre-registered suite over `T*` — multi-step, knowledge-intensive
+coding/doc tasks in which **retrieval and state-tracking dominate the
+difficulty**, each with an **automatable success oracle** (tests pass, or the
+produced artifact matches a rubric). The reference corpora each task needs are
+mirrored into L3 up front. The suite is chosen honestly (representative of `T*`),
+not cherry-picked to flatter A1.
+
+### 9.4 Metrics
+- **Primary — task success rate** per arm.
+- **Mechanism — tokens-in-context per step** (expect A1 ≪ A0 per step: the
+  minimality lever of §0.3).
+- **Safety — invariant-violation count** (expect **0** for A1 by construction;
+  any nonzero count means the harness is broken, not that the thesis failed).
+- **Secondary** — total tokens, wall-clock, stage/step count, MCP-fetch count,
+  and fetch/parse-failure rate (small-model tool-calling reliability).
+
+Derived: multiplier estimate `μ̂ = success(A1) / success(A0)`; **gap-closure**
+`= (success(A1) − success(A0)) / (success(A2) − success(A0))`.
+
+### 9.5 Pass / falsify criteria
+- **Thesis supported** iff **all** hold: `μ̂` significantly `> 1` (A1 ≫ A0);
+  gap-closure `≥ 0.5` (structure closes ≥ half the small→frontier gap);
+  per-step context(A1) `≪` context(A0) (mechanism confirmed); and
+  invariant-violations(A1) `= 0`.
+- **Thesis falsified** if `μ̂ ≈ 1` on `T*` (A1 ≈ A0): the structure did **not**
+  multiply capability for this model class. This outcome is to be reported
+  plainly, not explained away.
+
+### 9.6 Threats to validity
+Task-set bias (mitigate: pre-register, choose representatively); **harness doing
+the reasoning** rather than the model (mitigate: keep the harness "dumb," §7.6,
+and inspect that guards/routing carry no task logic); small-model tool-calling
+unreliability (measure it directly as fetch/parse-failure rate — a confound that
+could sink A1 for reasons unrelated to the thesis).
 
 ## 10. Roadmap & Open Questions
 
-_What is deferred and to which sprint (s1 runtime, s2 validation), plus the open
-design questions this spec does not yet close._
+### 10.1 Roadmap
+- **s0 (this sprint).** Formalization: this spec, `PROVENANCE.md`, ADRs, the
+  `template/` scaffold, and `verify-spec.sh`.
+- **s1 — runtime.** A Rust stdio **MCP server** (Resources + the
+  `fetch_isolated_context` Tool, §6), the **`mirror`** ingestion pipeline (§6.5),
+  and the **enforcement harness** (§7). Exit smoke E2E: one stage transition with
+  one MCP fetch, invariants observed.
+- **s2 — validation.** Execute the §9 benchmark on a real local model
+  (Ollama / llama.cpp); report `μ̂` and gap-closure; confirm or falsify H1.
+- **later.** Real multi-stage workflows, richer routing, L3 chunking/caching
+  tuning.
 
-<!-- populated by T-007 -->
+### 10.2 Open questions
+- **Q1 (core risk).** Can a 7–8B model reliably emit the three-action alphabet —
+  especially structured `FETCH`/`WRITE` — through local tool-calling? Probed by
+  the s1 smoke test before s2 invests in the full benchmark.
+- **Q2.** Routing: hand-authored matrix vs model-proposed routes. INV-6 demands
+  determinism, so any model-proposed route must be frozen and audited.
+- **Q3.** L3 chunking strategy (by heading vs semantic vs fixed-size) and its
+  effect on fetch precision and token cost.
+- **Q4.** How strict and automatable is the `Outputs`-well-formed guard (§4.4) —
+  a per-stage output schema?
+- **Q5.** Does `S_DM` help frontier models (A3), or only small ones? Bears on how
+  general the framework is.
+- **Q6.** Recovery beyond escalation (§4.5): partial re-planning of a stuck stage
+  vs. full human hand-off.

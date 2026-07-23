@@ -53,3 +53,9 @@
 - **Completed:** 2026-07-23T14:37:12Z
 - **Files modified:** decisions.md
 - **Commit:** `c20c2fa`
+
+## T-010 (sprint 0)
+- **Description:** template/ scaffold skeleton — five layer directories (00_identity, 01_routing, 02_stages/00_example_stage, 03_reference, 04_artifacts), MANIFEST.md describing each layer, 03_reference/README.md stating MCP-served/never-direct-read (INV-3), and 04_artifacts/.gitkeep.
+- **Completed:** 2026-07-23T14:38:56Z
+- **Files modified:** template/MANIFEST.md, template/03_reference/README.md, template/04_artifacts/.gitkeep, template/{00_identity,01_routing,02_stages/00_example_stage}/.gitkeep
+- **Commit:** `ba48279`

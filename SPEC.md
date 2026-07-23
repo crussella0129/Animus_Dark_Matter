@@ -535,12 +535,85 @@ Implementation of `mirror` (and the server itself) is s1 (§10).
 
 ## 7. The Enforcement Model
 
-_How the hard gate is actually enforced for an untrusted small model: the harness
-executes the FSM, presents only the permitted context, constrains the model's
-actions to {write→L4, fetch→L3, stage-complete}, and validates every action
-against the invariants — "physically cannot," not "must not."_
+### 7.1 The principle: "physically cannot," not "must not"
 
-<!-- populated by T-006 -->
+The README asks the model to *"only read/write files matching its current
+directory layer."* A 7–8B local model will not reliably obey such an instruction —
+and a framework whose isolation depends on the model's discipline has no
+isolation at all. DM therefore moves enforcement **out of the model** and into an
+external **harness**. The design principle is that the model *cannot* misbehave
+because the surrounding structure physically constrains its inputs and outputs —
+enforcement by **construction**, not by instruction.
+
+### 7.2 The harness
+
+The **harness** is the external process that drives the local model. It is the
+executor of the state machine (§4) and the owner of everything the model is not
+trusted with:
+
+1. It **holds the configuration** `κ = (σ, C_active, A)` (§4.3) — the single
+   source of truth for control state. The model never mutates `κ` directly.
+2. It **assembles `C_active`** for each step to satisfy INV-5: pinned L0 + the
+   active stage's contract + fetched L3 chunks + referenced L4 artifacts, and
+   nothing else. **The model only ever sees what the harness assembles.**
+3. It **exposes a constrained action interface** (§7.3) — the sole things the
+   model can *do*.
+4. It **validates every proposed action** against the invariants before applying
+   it.
+5. It **runs `δ` with guard `G`** (§4.4); the model cannot self-transition.
+
+### 7.3 The model as a constrained function
+
+The model is reduced to a pure proposer, `propose : C_active → Action`, where the
+**action alphabet is exactly three**:
+
+- **`WRITE(path, content)`** — the harness validates `path`. If `path` is not in
+  L4 within the active stage's output area, the **write is rejected** (INV-2);
+  otherwise it is applied and extends the artifact set `A`.
+- **`FETCH(target, query | uri)`** — routed to the MCP server, which serves a
+  chunk only if `target` is in the active stage's bindings (INV-3), returning it
+  into `C_active`. **There is no "read arbitrary file" action**, so L3 direct
+  reads are impossible by absence.
+- **`STAGE_COMPLETE`** — the harness evaluates `G(active())` (Outputs satisfied,
+  §4.4). If it holds, `δ` advances and `flush` runs (§4.6); if not, the signal is
+  **refused** and the model is told which outputs are still missing.
+
+Crucially, there is **no** action for "switch stage," "read a sibling stage's
+contract," or "read L3 directly." The capability lattice (§3) *is* this action
+interface: capabilities the lattice withholds simply have no corresponding verb
+the model can invoke.
+
+### 7.4 Enforcement mapping (actions ↔ invariants)
+
+| Invariant | How the harness enforces it |
+|-----------|-----------------------------|
+| **INV-1** Single active stage | Harness holds one `σ`; no "switch stage" action exists — only guarded `δ`. |
+| **INV-2** Write-isolation to L4 | `WRITE` validated to `L4 ∩ scope(active())`; out-of-scope writes rejected. |
+| **INV-3** L3 reference gate | Only `FETCH` reaches L3, via the MCP server, which checks bindings; no direct-read verb exists. |
+| **INV-4** Stage isolation | `C_active` assembly excludes sibling contracts; `flush` clears on transition (§4.6). |
+| **INV-5** Context minimality | Harness assembles `C_active` from exactly the four sanctioned sources. |
+| **INV-6** Routing determinism | Harness computes the route deterministically in `ROUTING`; the model does not route. |
+
+Every `INV-n` named here is defined in §5.
+
+### 7.5 Trust boundary
+
+The model is **untrusted for control and access** and trusted only to *propose
+content*. The harness and MCP server form the **trusted computing base**. This
+inverts the README's implicit "capable, well-behaved model" assumption, and has
+one decisive consequence:
+
+> **Isolation correctness does not depend on model capability.** A weaker model
+> is *less capable*, never *less safe*. Safety is decoupled from capability —
+> which is precisely what makes targeting small local models viable.
+
+### 7.6 Scope of the harness
+
+The harness does **no reasoning** — it is a strict, "dumb" executor. All
+intelligence is the model's; all *control* is the harness's. Retry budget and the
+escalation policy (§4.5) are harness configuration. DM's harness is a specific
+instance of the general agent-harness pattern, distinguished by enforcing the
+FSM × capability-lattice and the MCP reference gate as its invariants.
 
 ## 8. Canonical Directory Layout
 

@@ -29,3 +29,9 @@
 - **Completed:** 2026-07-23T14:32:51Z
 - **Files modified:** SPEC.md
 - **Commit:** `0269bdf`
+
+## T-006 (sprint 0)
+- **Description:** SPEC §7 — enforcement model: harness as FSM executor assembling C_active; model reduced to a 3-action alphabet {WRITE→L4, FETCH→L3, STAGE_COMPLETE} with non-L4 writes rejected; enforcement mapping to INV-1..6; trust boundary decoupling safety from capability.
+- **Completed:** 2026-07-23T14:33:54Z
+- **Files modified:** SPEC.md
+- **Commit:** `1ad948b`

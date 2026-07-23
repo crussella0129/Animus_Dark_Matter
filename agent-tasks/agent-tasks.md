@@ -1,6 +1,5 @@
 # Agent Tasks (Persistent Backlog)
 
-- [ ] T-006 (sprint 0): SPEC §7 enforcement model (external harness) — touches: SPEC.md
 - [ ] T-007 (sprint 0): SPEC §8 layout + §9 validation design + §10 roadmap — touches: SPEC.md
 - [ ] T-008 (sprint 0): PROVENANCE.md — touches: PROVENANCE.md
 - [ ] T-009 (sprint 0): seed decisions.md ADR-0001..0005 — touches: decisions.md

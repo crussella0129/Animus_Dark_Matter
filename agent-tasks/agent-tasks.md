@@ -1,6 +1,5 @@
 # Agent Tasks (Persistent Backlog)
 
-- [ ] T-003 (sprint 0): SPEC §4 ICM state machine (states, δ, guards, flush, Mermaid) — touches: SPEC.md
 - [ ] T-004 (sprint 0): SPEC §5 invariants INV-1..6 (checkable) — touches: SPEC.md
 - [ ] T-005 (sprint 0): SPEC §6 MCP knowledge-layer contract — touches: SPEC.md
 - [ ] T-006 (sprint 0): SPEC §7 enforcement model (external harness) — touches: SPEC.md

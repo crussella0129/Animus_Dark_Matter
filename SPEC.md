@@ -279,12 +279,110 @@ lever behind the multiplier `μ`.
 
 ## 4. The ICM State Machine
 
-_The ICM is formalized here as a finite state machine over stages (plus the meta
-states IDENTITY, ROUTING, DONE), with a transition function δ, guards requiring
-the source stage's Outputs contract to be satisfied, and context-flush-on-
-transition. Includes a Mermaid state diagram._
+The **stage** axis (the second of the two axes from §3) is a finite state
+machine. Where the source ICM paper *"lacks rigorous state-machine notation,"*
+this section supplies it.
 
-<!-- populated by T-003 -->
+### 4.1 The machine as a tuple
+
+The ICM is the tuple
+
+&nbsp;&nbsp;&nbsp;&nbsp;`ICM = (Σ, σ₀, F, Δ, G, flush)`
+
+- **`Σ`** — the finite **state set** (§4.2).
+- **`σ₀ = IDENTITY`** — the initial state.
+- **`F = {DONE}`** — the terminal (accepting) states. `DONE` carries a status in
+  `{complete, escalated}` (§4.5); adding no extra control states keeps the model
+  small.
+- **`Δ ⊆ Σ × Event × Σ`** — the guarded **transition relation** (§4.4).
+- **`G`** — the family of **guard predicates** (§4.4).
+- **`flush`** — the **context-flush** applied on every transition (§4.6).
+
+At any instant exactly one state `σ ∈ Σ` is active (INV-1, §5).
+
+### 4.2 States `Σ`
+
+`Σ = {IDENTITY, ROUTING} ∪ {s₁, …, sₙ} ∪ {DONE}`, where:
+
+- **`IDENTITY`** — bootstrap. The harness loads L0 and **pins** it into
+  `C_active` for the entire run.
+- **`ROUTING`** — the harness reads the L1 routing matrix, computes a problem
+  signature for the task, and resolves an **ordered stage sequence**
+  `⟨s₁, …, sₙ⟩` together with each stage's L3 **reference bindings**.
+- **`s₁ … sₙ`** — the **stages**, drawn from `02_stages/` and ordered by ROUTING.
+  Each `sᵢ` has a contract `(Inputs, Process, Outputs)` (§2.2).
+- **`DONE`** — terminal.
+
+### 4.3 Configuration
+
+The harness tracks a **configuration** `κ = (σ, C_active, A)`: the control state
+`σ`, the ephemeral active context `C_active`, and the persistent artifact set
+`A ⊆ L4` produced so far. Transitions change `σ`, may extend `A`, and always
+reset `C_active` (§4.6). `A` is the durable "data state"; `C_active` is working
+memory; `σ` is the program counter.
+
+### 4.4 Transition relation `Δ` and guards `G`
+
+Transitions are driven by **events the model proposes and the harness validates**
+(§7). The principal event is **`stage-complete`**. The guard on leaving a stage
+is the stage's own Outputs contract:
+
+> **`G(sᵢ)` holds** ⟺ every artifact named in `sᵢ.Outputs` exists in L4 and is
+> well-formed.
+
+| From | Event | Guard | To |
+|------|-------|-------|-----|
+| `IDENTITY` | `identity-pinned` | L0 loaded & pinned | `ROUTING` |
+| `ROUTING` | `route-resolved` | a non-empty stage sequence `⟨s₁…sₙ⟩` was resolved | `s₁` |
+| `sᵢ` (`i<n`) | `stage-complete` | **`G(sᵢ)`** — `sᵢ.Outputs` satisfied | `sᵢ₊₁` |
+| `sₙ` | `stage-complete` | **`G(sₙ)`** | `DONE` |
+| `sᵢ` | `stage-complete` | **¬`G(sᵢ)`** | `sᵢ` (refused — stay; finish outputs) |
+| `sᵢ` | `escalate` | guard unmet after the harness's bounded-retry budget | `DONE` (status `escalated`) |
+
+Guards are checked by the **harness**, never self-reported by the model (§7).
+A refused transition leaves the machine in `sᵢ`; the model continues producing
+the missing outputs.
+
+### 4.5 Failure & escalation
+
+The framework does not silently loop. If `G(sᵢ)` cannot be met within the
+harness's bounded-retry budget, the machine transitions to `DONE` with status
+`escalated`, surfacing the stuck stage for human diagnosis rather than inventing
+progress. (Retry budget and escalation policy are harness configuration, §7.)
+
+### 4.6 Context-flush-on-transition
+
+On **every** transition `σ → σ′`, the harness applies `flush`:
+
+1. Clear `C_active` **except** the pinned L0 identity.
+2. Load `σ′`'s required context and nothing more: for a stage `s′`, that is
+   `s′.CONTRACT.md` (L2, scoped to `s′` only), the artifacts named in
+   `s′.Inputs` (read from L4), and the **availability** of `s′`'s L3 reference
+   bindings — fetchable on demand via MCP (§6), **not** preloaded.
+
+`flush` is the physical mechanism behind context minimality (INV-5) and stage
+isolation (INV-4): each stage begins from a clean slate plus pinned identity, so
+the model *cannot* carry intent-parsing, doc-fetching, and code-generation into a
+single overloaded prompt cycle — the exact failure mode small models handle worst
+(§0.3).
+
+### 4.7 State diagram
+
+```mermaid
+stateDiagram-v2
+    [*] --> IDENTITY
+    IDENTITY --> ROUTING: identity-pinned / L0 pinned
+    ROUTING --> Stage_1: route-resolved
+    Stage_1 --> Stage_2: stage-complete [G(s1) ✓] / flush
+    Stage_2 --> Stage_n: stage-complete [G(s2) ✓] / flush
+    Stage_n --> DONE: stage-complete [G(sn) ✓] / flush
+    Stage_1 --> Stage_1: stage-complete [¬G(s1)] (refused)
+    Stage_2 --> DONE: escalate / status=escalated
+    DONE --> [*]
+```
+
+`Stage_1 … Stage_n` denote the routing-resolved stages `s₁ … sₙ`; the diagram's
+states are exactly `Σ` (§4.2): `IDENTITY`, `ROUTING`, the stages, and `DONE`.
 
 ## 5. Invariants
 

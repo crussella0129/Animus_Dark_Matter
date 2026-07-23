@@ -11,3 +11,9 @@
 - **Completed:** 2026-07-23T14:29:26Z
 - **Files modified:** SPEC.md
 - **Commit:** `94367e1`
+
+## T-003 (sprint 0)
+- **Description:** SPEC §4 — the ICM state machine: tuple (Σ, σ₀, F, Δ, G, flush), states incl. IDENTITY/ROUTING/DONE + stages, configuration κ, guarded transition table (Outputs-contract guards), escalation, context-flush-on-transition, and a Mermaid stateDiagram.
+- **Completed:** 2026-07-23T14:30:49Z
+- **Files modified:** SPEC.md
+- **Commit:** `588cdf7`

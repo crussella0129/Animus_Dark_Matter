@@ -1,0 +1,115 @@
+# Completed Tasks Log (Append-Only)
+
+## T-001 (sprint 0)
+- **Description:** Create SPEC.md skeleton (§0–§10) + §0 abstract & formal Dark-Matter thesis + §1 provenance summary + §2 definitions/glossary.
+- **Completed:** 2026-07-23T14:27:27Z
+- **Files modified:** SPEC.md
+- **Commit:** `c14d136`
+
+## T-002 (sprint 0)
+- **Description:** SPEC §3 — the layer model as a capability lattice (per-layer READ/FETCH/WRITE profiles, Boolean lattice over 2^P à la Denning, scope refinement, mechanism link to §0.3).
+- **Completed:** 2026-07-23T14:29:26Z
+- **Files modified:** SPEC.md
+- **Commit:** `94367e1`
+
+## T-003 (sprint 0)
+- **Description:** SPEC §4 — the ICM state machine: tuple (Σ, σ₀, F, Δ, G, flush), states incl. IDENTITY/ROUTING/DONE + stages, configuration κ, guarded transition table (Outputs-contract guards), escalation, context-flush-on-transition, and a Mermaid stateDiagram.
+- **Completed:** 2026-07-23T14:30:49Z
+- **Files modified:** SPEC.md
+- **Commit:** `588cdf7`
+
+## T-004 (sprint 0)
+- **Description:** SPEC §5 — invariants INV-1..6 (single active stage; write-isolation to L4; L3 MCP reference-gate; stage isolation; context minimality; routing determinism), each as a checkable condition + observer procedure + "enforced by" link.
+- **Completed:** 2026-07-23T14:31:47Z
+- **Files modified:** SPEC.md
+- **Commit:** `94564ce`
+
+## T-005 (sprint 0)
+- **Description:** SPEC §6 — MCP knowledge-layer contract: chunks as Resources (ref:// URIs + ttlMs/cacheScope), one fetch_isolated_context Tool for search (I/O contract), server as sole L3 gatekeeper realizing INV-3 structurally, isolation/caching guarantees, and the deferred 'mirror' ingestion input→output contract.
+- **Completed:** 2026-07-23T14:32:51Z
+- **Files modified:** SPEC.md
+- **Commit:** `0269bdf`
+
+## T-006 (sprint 0)
+- **Description:** SPEC §7 — enforcement model: harness as FSM executor assembling C_active; model reduced to a 3-action alphabet {WRITE→L4, FETCH→L3, STAGE_COMPLETE} with non-L4 writes rejected; enforcement mapping to INV-1..6; trust boundary decoupling safety from capability.
+- **Completed:** 2026-07-23T14:33:54Z
+- **Files modified:** SPEC.md
+- **Commit:** `1ad948b`
+
+## T-007 (sprint 0)
+- **Description:** SPEC §8 canonical layout (matches template/ name-for-name) + §9 validation design (arms A0/A1/A2/A3, metrics incl. tokens-in-context/step + invariant-violations, μ̂ + gap-closure, explicit pass/falsify criteria, threats to validity) + §10 roadmap (s1 runtime, s2 validation) & six open questions. SPEC.md now complete (§0–§10, no placeholders).
+- **Completed:** 2026-07-23T14:35:34Z
+- **Files modified:** SPEC.md
+- **Commit:** `cbe94f2`
+
+## T-008 (sprint 0)
+- **Description:** PROVENANCE.md — credits ICM/MWP (arXiv 2603.16021, Van Clief & McDermott) and Anthropic MCP as the two primary sources; lists inherited elements; enumerates DM's six departures in a delta table with SPEC cross-refs; positioning statement + BibTeX citation.
+- **Completed:** 2026-07-23T14:36:18Z
+- **Files modified:** PROVENANCE.md
+- **Commit:** `62a9340`
+
+## T-009 (sprint 0)
+- **Description:** Seeded decisions.md with ADR-0001..0005 (provenance/ICM credit; Resources+one-Tool MCP layer; external-harness enforcement; FSM×capability-lattice formal model; Rust-stdio reference runtime), each with status, context, decision, consequences, and SPEC cross-reference.
+- **Completed:** 2026-07-23T14:37:12Z
+- **Files modified:** decisions.md
+- **Commit:** `c20c2fa`
+
+## T-010 (sprint 0)
+- **Description:** template/ scaffold skeleton — five layer directories (00_identity, 01_routing, 02_stages/00_example_stage, 03_reference, 04_artifacts), MANIFEST.md describing each layer, 03_reference/README.md stating MCP-served/never-direct-read (INV-3), and 04_artifacts/.gitkeep.
+- **Completed:** 2026-07-23T14:38:56Z
+- **Files modified:** template/MANIFEST.md, template/03_reference/README.md, template/04_artifacts/.gitkeep, template/{00_identity,01_routing,02_stages/00_example_stage}/.gitkeep
+- **Commit:** `ba48279`
+
+## T-011 (sprint 0)
+- **Description:** Filled the template layer files with a coherent worked example (implement-against-library, the target class T*): L0 00_identity/IDENTITY.md (pinned identity + hard constraints), L1 01_routing/ROUTING.md (routing-matrix format + worked example mapping signature→stages+bindings, INV-6 determinism note), L2 02_stages/00_example_stage/CONTRACT.md (Inputs·Process·Outputs with Outputs as guard G). Removed three placeholder .gitkeeps.
+- **Completed:** 2026-07-23T14:40:23Z
+- **Files modified:** template/00_identity/IDENTITY.md, template/01_routing/ROUTING.md, template/02_stages/00_example_stage/CONTRACT.md (rm .gitkeeps)
+- **Commit:** `e3d2676`
+
+## T-012 (sprint 0)
+- **Description:** Rewrote README.md — kept the pitch + ascii layer diagram, fixed the top run-on, added a "Why Dark Matter" section (the rotation-curve metaphor), a "How it works" section (ICM engine + MCP vault + external enforcement), a status table (s0 done / s1 / s2), a Documents section linking SPEC.md, PROVENANCE.md, template/MANIFEST.md, decisions.md, an ICM/MWP + MCP credit, and an updated Master Framework Prompt (now normative-defers-to-SPEC, Resources + external harness).
+- **Completed:** 2026-07-23T14:41:48Z
+- **Files modified:** README.md
+- **Commit:** `19c1ffa`
+
+## T-013 (sprint 0)
+- **Description:** scripts/verify-spec.sh — mechanical spec/scaffold/ADR coherence verifier (43 checks): SPEC skeleton §0-§10, thesis/glossary, lattice table + single-writable + L3 fetch-only, state set/guards/flush/mermaid, INV-1..6 defined + all INV refs resolve, MCP Resources/Tool/gatekeeper/ingestion, enforcement action-alphabet + write-rejection, §8 layout, §9 arms/falsification, §10 s1/s2, PROVENANCE citations + delta, 5 ADRs + cross-refs, template dirs/files, template==§8, README sections/status/link-resolution. Exits non-zero naming failures; green on finished repo.
+- **Completed:** 2026-07-23T14:45:31Z
+- **Files modified:** scripts/verify-spec.sh
+- **Commit:** `a443032`
+
+## T-101 (sprint 1)
+- **Description:** SPEC.md re-scope — added a Scope banner (DM builds the knowledge layer §6 + ingestion; runtime is Ferric/any ICM agent), a §11 "Relationship to Ferric" section mapping §3–§5/§7 onto ferric-icm/ferric-guard/ferric-loop, the §11 ToC entry, and "enforced by the runtime" reframe markers on §3/§4/§5/§7.
+- **Completed:** 2026-07-23T15:26:36Z
+- **Files modified:** SPEC.md
+- **Commit:** `857a47f`
+
+## T-102 (sprint 1)
+- **Description:** SPEC.md §10 roadmap rewrite — s0 done, s1 re-scope done, s2 = build the Rust MCP knowledge server + mirror ingestion (DM's only runtime deliverable), a coordinated Ferric sprint = fetch_reference tool + compose_stage change, later = validation. Removed the "s1 — runtime / enforcement harness" framing (DM builds no runtime).
+- **Completed:** 2026-07-23T15:28:00Z
+- **Files modified:** SPEC.md
+- **Commit:** `663be26`
+
+## T-103 (sprint 1)
+- **Description:** INTEGRATION.md — the DM×Ferric integration contract: surface 1 (fetch_reference Ferric built-in tool descriptor + request/response matching SPEC §6.2 + binding enforcement), surface 2 (standalone MCP server for any MCP client), the ferric-icm::compose_stage change (stop pre-folding references/, fetch on demand via existing constrained loop, no new protocol), and the DM/Ferric repo boundary (JSONL engine stays in Ferric).
+- **Completed:** 2026-07-23T15:43:27Z
+- **Files modified:** INTEGRATION.md
+- **Commit:** `336e6f3`
+
+## T-104 (sprint 1)
+- **Description:** decisions.md — added ADR-0006 (DM = knowledge layer, rides Ferric's runtime), ADR-0007 (integration seam = Ferric built-in fetch_reference tool + standalone MCP server; JSONL engine stays in Ferric), ADR-0008 (re-scope: spec formalizes Ferric, DM build = knowledge layer); amended ADR-0003/0005 status with "amended by ADR-0006/0008" notes. PROVENANCE.md — added "Relationship to Ferric" crediting ferric-icm (ADR-064) as an independent reference implementation.
+- **Completed:** 2026-07-23T15:45:27Z
+- **Files modified:** decisions.md, PROVENANCE.md
+- **Commit:** `ed8e944`
+
+## T-105 (sprint 1)
+- **Description:** README.md reposition — subtitle/intro now "the MCP knowledge layer for ICM agents (Ferric-native and standalone)"; How-it-works split into ICM-runtime-is-Ferric vs knowledge-layer-is-DM + two-surfaces; status table updated (s0 done, s1 design settled, s2 = build MCP knowledge server, Ferric row for fetch_reference/compose_stage); added INTEGRATION.md to Documents; provenance now says DM rides Ferric's runtime (contribution = knowledge layer).
+- **Completed:** 2026-07-23T18:50:17Z
+- **Files modified:** README.md
+- **Commit:** `3c15472`
+
+## T-106 (sprint 1)
+- **Description:** Extended scripts/verify-spec.sh with 18 s1 checks (scope banner, §11 relationship, reframe markers on §3/4/5/7, §10 roadmap s2-build + Ferric-sprint + no-harness negative, INTEGRATION.md tool/compose/standalone/boundary, ADR-0006..0008 + amend notes, PROVENANCE ferric-icm credit, README reposition/status, s0-survivors-intact, and a soft Ferric-citation-resolve check). Also extended link resolution to SPEC.md + INTEGRATION.md. Full suite: 61 checks green.
+- **Completed:** 2026-07-23T19:23:18Z
+- **Files modified:** scripts/verify-spec.sh
+- **Commit:** `caf83cb`

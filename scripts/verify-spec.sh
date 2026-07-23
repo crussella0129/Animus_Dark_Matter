@@ -169,7 +169,7 @@ for tgt in "$SPEC" "$PROV"; do grep -qE "$(basename "$tgt")" "$RDME" && [ -f "$t
 
 # ---- link resolution across doc files (strip #fragments; skip http/# ) ----
 link_bad=""
-for f in "$RDME" "$TPL/MANIFEST.md" "$TPL/03_reference/README.md"; do
+for f in "$RDME" "$SPEC" "$ROOT/INTEGRATION.md" "$TPL/MANIFEST.md" "$TPL/03_reference/README.md"; do
   [ -f "$f" ] || continue
   base="$(dirname "$f")"
   while IFS= read -r lnk; do
@@ -180,6 +180,55 @@ for f in "$RDME" "$TPL/MANIFEST.md" "$TPL/03_reference/README.md"; do
   done < <(grep -oE '\]\([^)]+\)' "$f" | sed -E 's/^\]\(//; s/\)$//')
 done
 [ -z "$link_bad" ] && pass "check_readme_links" || fail "check_readme_links" "dangling:$link_bad"
+
+# =================== s1 re-scope checks (Component A–E) ===================
+INTEG="$ROOT/INTEGRATION.md"
+
+# ---- SPEC: scope banner + §11 + reframe markers ----
+if grep -qiE 'scope \(s1\)' "$SPEC" && grep -qiE 'knowledge layer' "$SPEC" && grep -qE 'Ferric' "$SPEC"; then pass "check_scope_banner"; else fail "check_scope_banner" "SPEC scope banner missing"; fi
+if grep -qE '^## 11[.]' "$SPEC" && grep -qE 'ferric-icm' "$SPEC" && grep -qE 'ferric-guard' "$SPEC" && grep -qE 'ferric-loop' "$SPEC"; then pass "check_relationship_section"; else fail "check_relationship_section" "§11 missing or lacks ferric-* crates"; fi
+reframe_bad=""
+for n in 3 4 5 7; do section "$n" | grep -qE 'enforced by the runtime' || reframe_bad="$reframe_bad §$n"; done
+[ -z "$reframe_bad" ] && pass "check_reframe_notes" || fail "check_reframe_notes" "missing reframe marker in:$reframe_bad"
+
+# ---- SPEC §10 roadmap ----
+if section 10 | grep -qiE 'MCP knowledge server' && section 10 | grep -qE 'mirror'; then pass "check_roadmap_s2_build"; else fail "check_roadmap_s2_build" "§10 s2 build (MCP knowledge server + mirror) missing"; fi
+if section 10 | grep -qE 'fetch_reference' && section 10 | grep -qE 'compose_stage'; then pass "check_roadmap_ferric_sprint"; else fail "check_roadmap_ferric_sprint" "§10 Ferric sprint (fetch_reference + compose_stage) missing"; fi
+if section 10 | grep -qiE 'enforcement harness'; then fail "check_roadmap_no_harness" "§10 still claims DM builds an enforcement harness"; else pass "check_roadmap_no_harness"; fi
+
+# ---- INTEGRATION.md ----
+hasfile "integration-file-exists" "$INTEG"
+has "check_integration_tool" "$INTEG" 'fetch_reference' "fetch_reference tool descriptor missing"
+if grep -qE 'compose_stage' "$INTEG" && grep -qE 'references/' "$INTEG"; then pass "check_integration_compose"; else fail "check_integration_compose" "compose_stage change not described"; fi
+if grep -qiE 'standalone' "$INTEG" && grep -qE 'MCP server' "$INTEG"; then pass "check_integration_standalone"; else fail "check_integration_standalone" "standalone MCP server not described"; fi
+if grep -qiE 'repo boundary' "$INTEG" && grep -qE 'Animus_Ferric' "$INTEG"; then pass "check_integration_boundary"; else fail "check_integration_boundary" "repo boundary not stated"; fi
+
+# ---- decisions.md: new ADRs + amend notes; PROVENANCE credit ----
+adr1_missing=""
+for i in 6 7 8; do grep -qE "^## ADR-000$i" "$DEC" || adr1_missing="$adr1_missing 000$i"; done
+[ -z "$adr1_missing" ] && pass "check_new_adrs" || fail "check_new_adrs" "missing ADRs:$adr1_missing"
+[ "$(grep -cE 'amended by ADR-0006/0008' "$DEC")" -ge 2 ] && pass "check_adr_amend_notes" || fail "check_adr_amend_notes" "ADR-0003/0005 amend notes missing (need 2)"
+has "check_provenance_ferric" "$PROV" 'ferric-icm' "PROVENANCE lacks ferric-icm credit"
+
+# ---- README reposition ----
+if grep -qiE 'knowledge layer' "$RDME" && grep -qE 'INTEGRATION\.md' "$RDME"; then pass "check_readme_reposition"; else fail "check_readme_reposition" "README not repositioned / no INTEGRATION link"; fi
+if grep -qiE 'knowledge server' "$RDME"; then pass "check_readme_status_s2"; else fail "check_readme_status_s2" "README status s2 (knowledge server) missing"; fi
+
+# ---- INTEGRATION coherence ----
+if grep -qE '^## 6[.]' "$SPEC" && grep -qE '^## 9[.]' "$SPEC"; then pass "test_s0_survivors_intact"; else fail "test_s0_survivors_intact" "§6/§9 missing after re-scope"; fi
+FERRIC=""
+for cand in "$ROOT/../Animus_Ferric" "/c/Users/charl/Animus_Ferric" "$HOME/Animus_Ferric"; do
+  [ -d "$cand" ] && FERRIC="$cand" && break
+done
+if [ -n "$FERRIC" ]; then
+  fcite_bad=""
+  for f in crates/ferric-icm/src/lib.rs crates/ferric-loop/src/grammar.rs; do
+    [ -f "$FERRIC/$f" ] || fcite_bad="$fcite_bad $f"
+  done
+  [ -z "$fcite_bad" ] && pass "test_ferric_citations_resolve" || fail "test_ferric_citations_resolve" "cited Ferric paths absent:$fcite_bad"
+else
+  pass "test_ferric_citations_resolve (skipped: Ferric repo not present)"
+fi
 
 # ---- summary ----
 echo "-------------------------------------------"

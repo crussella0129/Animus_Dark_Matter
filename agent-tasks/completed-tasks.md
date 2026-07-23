@@ -107,3 +107,9 @@
 - **Completed:** 2026-07-23T18:50:17Z
 - **Files modified:** README.md
 - **Commit:** `3c15472`
+
+## T-106 (sprint 1)
+- **Description:** Extended scripts/verify-spec.sh with 18 s1 checks (scope banner, §11 relationship, reframe markers on §3/4/5/7, §10 roadmap s2-build + Ferric-sprint + no-harness negative, INTEGRATION.md tool/compose/standalone/boundary, ADR-0006..0008 + amend notes, PROVENANCE ferric-icm credit, README reposition/status, s0-survivors-intact, and a soft Ferric-citation-resolve check). Also extended link resolution to SPEC.md + INTEGRATION.md. Full suite: 61 checks green.
+- **Completed:** 2026-07-23T19:23:18Z
+- **Files modified:** scripts/verify-spec.sh
+- **Commit:** `caf83cb`

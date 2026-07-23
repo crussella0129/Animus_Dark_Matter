@@ -58,6 +58,19 @@ thesis (§0), the **formalization** (§3–§5), the **MCP hard gate** (§6), th
 "Dark Matter" and the "Local Intelligence Multiplier" framing are DM's; the
 folder-structure architecture is ICM's.
 
+## Relationship to Ferric (independent reference implementation)
+
+The same ICM paper is **independently implemented** by
+[Animus Ferric](https://github.com/crussella0129/Animus_Ferric) in its
+`ferric-icm` crate (Ferric ADR-064) — the same five layers and Inputs·Process·
+Outputs contracts — with enforcement by `ferric-guard` and a constrained
+`{thought, tool, args}` loop (`ferric-loop`). As of sprint 1 (see
+[`SPEC.md` §11](./SPEC.md) and [`INTEGRATION.md`](./INTEGRATION.md)), Dark Matter
+**rides that runtime** rather than reimplementing it, and its own contribution
+narrows to the **MCP-served knowledge layer** (§6) — the one part `ferric-icm`
+lacks (it reads L3 references directly). Credit for the ICM implementation Ferric
+provides is Ferric's; DM's is the knowledge layer on top.
+
 ## Citation
 
 ```bibtex

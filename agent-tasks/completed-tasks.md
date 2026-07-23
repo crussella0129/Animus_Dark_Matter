@@ -95,3 +95,9 @@
 - **Completed:** 2026-07-23T15:43:27Z
 - **Files modified:** INTEGRATION.md
 - **Commit:** `336e6f3`
+
+## T-104 (sprint 1)
+- **Description:** decisions.md — added ADR-0006 (DM = knowledge layer, rides Ferric's runtime), ADR-0007 (integration seam = Ferric built-in fetch_reference tool + standalone MCP server; JSONL engine stays in Ferric), ADR-0008 (re-scope: spec formalizes Ferric, DM build = knowledge layer); amended ADR-0003/0005 status with "amended by ADR-0006/0008" notes. PROVENANCE.md — added "Relationship to Ferric" crediting ferric-icm (ADR-064) as an independent reference implementation.
+- **Completed:** 2026-07-23T15:45:27Z
+- **Files modified:** decisions.md, PROVENANCE.md
+- **Commit:** `ed8e944`

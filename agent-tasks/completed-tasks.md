@@ -89,3 +89,9 @@
 - **Completed:** 2026-07-23T15:28:00Z
 - **Files modified:** SPEC.md
 - **Commit:** `663be26`
+
+## T-103 (sprint 1)
+- **Description:** INTEGRATION.md — the DM×Ferric integration contract: surface 1 (fetch_reference Ferric built-in tool descriptor + request/response matching SPEC §6.2 + binding enforcement), surface 2 (standalone MCP server for any MCP client), the ferric-icm::compose_stage change (stop pre-folding references/, fetch on demand via existing constrained loop, no new protocol), and the DM/Ferric repo boundary (JSONL engine stays in Ferric).
+- **Completed:** 2026-07-23T15:43:27Z
+- **Files modified:** INTEGRATION.md
+- **Commit:** `336e6f3`

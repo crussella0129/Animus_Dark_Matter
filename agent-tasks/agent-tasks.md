@@ -1,6 +1,5 @@
 # Agent Tasks (Persistent Backlog)
 
-- [ ] T-004 (sprint 0): SPEC §5 invariants INV-1..6 (checkable) — touches: SPEC.md
 - [ ] T-005 (sprint 0): SPEC §6 MCP knowledge-layer contract — touches: SPEC.md
 - [ ] T-006 (sprint 0): SPEC §7 enforcement model (external harness) — touches: SPEC.md
 - [ ] T-007 (sprint 0): SPEC §8 layout + §9 validation design + §10 roadmap — touches: SPEC.md

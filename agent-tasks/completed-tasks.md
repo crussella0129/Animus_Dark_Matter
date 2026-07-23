@@ -17,3 +17,9 @@
 - **Completed:** 2026-07-23T14:30:49Z
 - **Files modified:** SPEC.md
 - **Commit:** `588cdf7`
+
+## T-004 (sprint 0)
+- **Description:** SPEC §5 — invariants INV-1..6 (single active stage; write-isolation to L4; L3 MCP reference-gate; stage isolation; context minimality; routing determinism), each as a checkable condition + observer procedure + "enforced by" link.
+- **Completed:** 2026-07-23T14:31:47Z
+- **Files modified:** SPEC.md
+- **Commit:** `94564ce`

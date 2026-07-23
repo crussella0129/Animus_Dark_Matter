@@ -386,11 +386,73 @@ states are exactly `Σ` (§4.2): `IDENTITY`, `ROUTING`, the stages, and `DONE`.
 
 ## 5. Invariants
 
-_Six checkable invariants (INV-1 … INV-6) that any conforming implementation
-must uphold: single active stage, write-isolation to L4, the L3 MCP gate, stage
-isolation, context minimality, and routing determinism._
+A conforming implementation must uphold the following six invariants. Each is
+stated as a **mechanically checkable condition**: an observer with access to the
+harness's logs (the control state, the write log, the MCP-fetch log, and the
+provenance-partition of `C_active`) can decide *pass* or *fail* without judgment.
+The harness enforces them at runtime (§7); `scripts/verify-spec.sh` checks that
+the spec itself references them consistently.
 
-<!-- populated by T-004 -->
+Notation: `active()` is the current stage; `scope(s)` is stage `s`'s permitted
+`(verb, path)` set (§3.3); `prov(x)` is the provenance of a fragment `x` in
+`C_active`.
+
+### INV-1 — Single Active Stage
+**Statement.** At every execution step, exactly one state `σ ∈ Σ` is active.
+**Condition.** `|{σ ∈ Σ : active(σ)}| = 1`.
+**Check.** Inspect the harness configuration `κ` (§4.3); two concurrently active
+stages, or none between transitions, is a violation.
+**Enforced by.** The FSM control state (§4) + harness (§7).
+
+### INV-2 — Write-Isolation to L4
+**Statement.** Every write performed on the model's behalf lands in
+`04_artifacts/`, within the active stage's output area — never in L0–L3.
+**Condition.** For every write event `w`: `path(w) ∈ L4  ∧  (WRITE, path(w)) ∈ scope(active())`.
+**Check.** Audit the write log; any write whose path is outside L4 (or outside
+the active stage's output area) is a violation.
+**Enforced by.** The capability lattice (§3, L4 = the only `WRITE` class) +
+harness write-validation (§7).
+
+### INV-3 — L3 Reference Gate
+**Statement.** L3 content enters `C_active` **only** through an MCP fetch (§6);
+the model has no direct-read path to `03_reference/`.
+**Condition.** For every reference fragment `r` in `C_active`:
+`prov(r) = MCP-fetch  ∧  r ∈ bindings(active())`.
+**Check.** No `03_reference/` path appears in the model's direct-read log; every
+L3 fragment in context is traceable to an MCP-fetch call bound to the active
+stage.
+**Enforced by.** The MCP server as sole L3 gatekeeper (§6) + harness (§7).
+
+### INV-4 — Stage Isolation
+**Statement.** While `sᵢ` is active, the only readable L2 contract is
+`sᵢ.CONTRACT.md`; sibling stages' contracts and scratch never enter `C_active`.
+Inter-stage communication is solely via L4 artifacts.
+**Condition.** `C_active ∩ L2 ⊆ {sᵢ.CONTRACT.md}`, and any information originating
+in `sⱼ` (`j ≠ i`) present in `C_active` arrived via an L4 artifact.
+**Check.** Scan `C_active` for foreign contract content; scan artifact
+provenance for the only sanctioned cross-stage channel (L4).
+**Enforced by.** L2 read-scoping (§3.3) + context-flush-on-transition (§4.6).
+
+### INV-5 — Context Minimality
+**Statement.** `C_active` contains only the four sanctioned sources and nothing
+else.
+**Condition.**
+`C_active ⊆ pinned(L0) ∪ {active contract} ∪ fetched(L3 chunks) ∪ referenced(L4 artifacts)`,
+and the residual (unaccounted) partition is empty.
+**Check.** Partition `C_active` by provenance into the four buckets; a non-empty
+residual bucket is a violation.
+**Enforced by.** `flush` on every transition (§4.6) + harness context assembly
+(§7). This is the invariant most directly responsible for the multiplier `μ`.
+
+### INV-6 — Routing Determinism
+**Statement.** For a fixed routing matrix and a fixed problem signature, `ROUTING`
+resolves the same stage sequence and reference bindings on every run.
+**Condition.** `route` is a pure function:
+`route(matrix, signature) = ⟨s₁…sₙ⟩ + bindings`, and equal inputs yield equal
+outputs.
+**Check.** Re-run `ROUTING` with identical inputs; any difference in the resolved
+sequence or bindings is a violation (routing is auditable and reproducible).
+**Enforced by.** A deterministic routing matrix (§3, L1) + harness (§7).
 
 ## 6. The MCP Knowledge Layer
 

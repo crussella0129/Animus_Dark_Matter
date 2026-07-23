@@ -47,3 +47,9 @@
 - **Completed:** 2026-07-23T14:36:18Z
 - **Files modified:** PROVENANCE.md
 - **Commit:** `62a9340`
+
+## T-009 (sprint 0)
+- **Description:** Seeded decisions.md with ADR-0001..0005 (provenance/ICM credit; Resources+one-Tool MCP layer; external-harness enforcement; FSM×capability-lattice formal model; Rust-stdio reference runtime), each with status, context, decision, consequences, and SPEC cross-reference.
+- **Completed:** 2026-07-23T14:37:12Z
+- **Files modified:** decisions.md
+- **Commit:** `c20c2fa`

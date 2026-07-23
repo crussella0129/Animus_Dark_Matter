@@ -1,4 +1,4 @@
-# Animus_Dark_Matter Local Intelligence Multiplier (LIM) Framework
+# Animus Dark Matter: Local Intelligence Multiplier (LIM) Framework
 An instruction set to clone and establish mirrors of targeted content + create an agentic file structure based on the paper "Interpretable Context Methodology: Folder Structure as Agent Architecture" (https://arxiv.org/html/2603.16021v1) to handle when to access pertinent information situationally
 This framework scales parametric reasoning on lightweight, local models by decoupling knowledge retrieval and state tracking from internal model weights. It turns a static local directory structure into a physical state machine (ICM), while offloading raw domain-knowledge ingestion onto standard input/output protocols (MCP).
 

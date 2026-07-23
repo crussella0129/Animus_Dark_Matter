@@ -456,12 +456,82 @@ sequence or bindings is a violation (routing is auditable and reproducible).
 
 ## 6. The MCP Knowledge Layer
 
-_The L3 knowledge vault is specified here against the current MCP protocol:
-reference chunks as Resources (`ref://` URIs with `ttlMs`/`cacheScope`), a single
-`fetch_isolated_context` Tool for search/routing, the server as sole L3
-gatekeeper, and the (deferred) ingestion pipeline's input→output contract._
+L3 (`03_reference/`) is served by a stdio **Model Context Protocol** server. This
+section pins the contract to the current protocol (2026-07-28 spec RC): stdio
+transport (the harness spawns the server as a subprocess; newline-delimited
+JSON-RPC over stdin/stdout), and the three primitives **Resource** (read-only
+data), **Tool** (executable action), **Prompt** (template). DM uses **Resources +
+exactly one Tool**.
 
-<!-- populated by T-005 -->
+### 6.1 Reference chunks are Resources — not a Tool payload
+
+Each mirrored document is pre-chunked into clean-markdown fragments; **each chunk
+is an MCP Resource** with a stable URI:
+
+&nbsp;&nbsp;&nbsp;&nbsp;`ref://{target}/{doc-path}#{chunk-id}`
+
+- Resources are **read-only**, matching L3's immutable, fetch-only profile (§3).
+- Enumerated via `resources/list`, read via `resources/read`.
+- Every read result carries **`ttlMs`** and **`cacheScope`** (SEP-2549): because
+  reference content is stable and non-user-specific, `cacheScope` is **shared**
+  (safe to cache across runs and users) and `ttlMs` is sized to the mirror's
+  refresh cadence. Repeated reads of the same chunk are served from cache —
+  **zero marginal context tokens** — which is what makes the README's "near-zero
+  token bloat / pristine context window" claim actually true. Only the exact
+  chunk, never the whole document, ever enters `C_active`.
+
+> **Design note (ADR-0002).** The README specified the knowledge layer as a Tool
+> (`fetch_isolated_context`). Static, addressable, cacheable reference data is
+> idiomatically a **Resource**; modelling chunks as Resources is what unlocks
+> `ttlMs`/`cacheScope`. The Tool is retained only for *search* (§6.2).
+
+### 6.2 One Tool: `fetch_isolated_context` (search / routing)
+
+When the exact chunk URI is not known a priori, a single Tool resolves it:
+
+- **Input:** `{ target: string, query?: string, section?: string, k?: int = 4 }`
+  — `target` is a reference corpus **bound to the active stage** by the routing
+  matrix; `query` is a semantic/keyword search; `section` selects an explicit
+  heading; `k` caps the number of chunks returned.
+- **Output:** `{ chunks: [{ uri: "ref://…", text: string, score: number }], truncated: bool }`
+  — up to `k` clean-markdown chunks, each with its `ref://` URI (so the caller
+  can cite or re-`resources/read` it and hit cache) and a relevance score.
+  Text-only; never HTML.
+
+So: **Resources are the addressable back-end; the one Tool is the search
+front-end.** That is the entire public surface of the knowledge layer.
+
+### 6.3 The server is the sole L3 gatekeeper
+
+The MCP server is the **only** process with filesystem access to
+`03_reference/`. The harness and model reach L3 **exclusively** through
+`resources/read` or `fetch_isolated_context` — there is no direct-read code path.
+This realizes **INV-3** structurally rather than by instruction: the gate is
+missing-by-construction, not merely forbidden. The server serves a chunk only if
+its `target` is in the **active stage's reference bindings** (passed by the
+harness); an out-of-binding or ambient fetch is refused, upholding
+`r ∈ bindings(active())` from INV-3 (§5).
+
+### 6.4 Isolation & caching guarantees (summary)
+
+- **Text-only:** chunks are pre-cleaned markdown, so no markup tokens reach
+  `C_active`.
+- **Cacheable:** `ttlMs`/`cacheScope` make repeat reads cost zero marginal
+  context.
+- **Scoped:** per-stage bindings keep the model from wandering the whole vault.
+
+### 6.5 The ingestion pipeline — *out of scope for s0* (contract only)
+
+The producer of L3 Resources is a component named **`mirror`**. It is **deferred
+to s1**; only its contract is fixed here so §6's Resources have a defined source:
+
+- **Input:** a target descriptor `{ source_url | local_path, selector? }`.
+- **Process:** fetch → strip to clean markdown (drop HTML/chrome) → chunk by
+  heading/size → assign `ref://{target}/…#{chunk}` URIs → build a search index.
+- **Output:** a set of addressable, searchable Resources under
+  `03_reference/{target}/`, consumable by §6.1–6.2.
+
+Implementation of `mirror` (and the server itself) is s1 (§10).
 
 ## 7. The Enforcement Model
 

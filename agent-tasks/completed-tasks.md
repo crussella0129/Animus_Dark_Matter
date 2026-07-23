@@ -23,3 +23,9 @@
 - **Completed:** 2026-07-23T14:31:47Z
 - **Files modified:** SPEC.md
 - **Commit:** `94564ce`
+
+## T-005 (sprint 0)
+- **Description:** SPEC §6 — MCP knowledge-layer contract: chunks as Resources (ref:// URIs + ttlMs/cacheScope), one fetch_isolated_context Tool for search (I/O contract), server as sole L3 gatekeeper realizing INV-3 structurally, isolation/caching guarantees, and the deferred 'mirror' ingestion input→output contract.
+- **Completed:** 2026-07-23T14:32:51Z
+- **Files modified:** SPEC.md
+- **Commit:** `0269bdf`

@@ -200,11 +200,82 @@ the human-inspectable filesystem *is* the control surface.
 
 ## 3. The Layer Model — a Capability Lattice
 
-_L0–L4 are defined here as a capability lattice: each layer carries a fixed
-`read`/`write`/`MCP-fetch` profile, with L4 the only runtime-writable layer and
-L3 reachable only by MCP fetch._
+The framework has **two orthogonal axes**. This section defines the first: the
+**layer** axis — *what the model is allowed to touch* — as a capability lattice.
+The second, the **stage** axis — *where in the workflow the model is* — is the
+state machine of §4. At any instant the model's permitted operations are the
+**intersection** of the two: the active stage (§4) scopes down the capabilities
+the layer lattice grants.
 
-<!-- populated by T-002 -->
+### 3.1 Primitive capabilities and per-layer profiles
+
+There are three primitive capabilities, `P = {READ, FETCH, WRITE}`:
+
+- **READ** — a harness-mediated direct read of a file's text into `C_active`.
+- **FETCH** — retrieval of a reference chunk through the MCP server (§6). This is
+  the **only** channel by which L3 content may enter `C_active`.
+- **WRITE** — creation or modification of a file.
+
+Each layer carries a fixed capability profile:
+
+| Layer | Directory | Role | Read | MCP-Fetch | Write | Runtime-mutable | Pinned in `C_active` |
+|-------|-----------|------|:----:|:---------:|:-----:|:---------------:|:--------------------:|
+| **L0** | `00_identity/` | System identity & execution constraints | ✓ (pinned) | ✗ | ✗ | no (immutable) | **yes** |
+| **L1** | `01_routing/` | Routing matrix (problem → stages + ref bindings) | ✓ | ✗ | ✗ | no (immutable) | no |
+| **L2** | `02_stages/` | Stage contracts (Inputs·Process·Outputs) | ✓ (active stage only) | ✗ | ✗ | no (immutable) | active contract only |
+| **L3** | `03_reference/` | Knowledge vault (mirrored clean-markdown) | ✗ (gated) | ✓ **MCP-fetch only** | ✗ | no (stable) | no (fetched chunks only) |
+| **L4** | `04_artifacts/` | Working artifacts / scratchpad | ✓ (referenced) | ✗ | ✓ **(the only writable layer)** | **yes** | referenced artifacts only |
+
+Two rows carry the load-bearing asymmetries: **L4 is the only layer with WRITE**,
+and **L3 is the only layer reached by FETCH and it permits no direct READ** — its
+access mode is *MCP-fetch only*. Everything else is immutable, read-only support.
+
+### 3.2 The lattice
+
+Order the powerset `2^P` by subset inclusion `⊆`. `(2^P, ⊆)` is a Boolean
+lattice (meet = `∩`, join = `∪`); each layer is assigned one element of it:
+
+```
+L0 → {READ}     L1 → {READ}     L2 → {READ}
+L3 → {FETCH}    L4 → {READ, WRITE}
+```
+
+This is the **capability lattice**. It is the same construction as Denning's
+lattice model of secure information flow (Denning, 1976): layers are security
+classes, and permitted operations are ordered by the lattice. The model's
+*effective* capability at any step is bounded above by the join of the layers the
+active stage admits, and the **harness enforces that bound** (§7). The design
+consequence is that WRITE is confined to a single class (L4) while knowledge
+flows *in* through a narrow, audited channel (L3 via FETCH) that cannot
+contaminate identity, routing, or reference state.
+
+### 3.3 Scope refinement
+
+Capability is more precisely a `(verb, scope)` pair: the lattice fixes the *verb*;
+the active stage (§4) and routing matrix (§6) fix the *scope*.
+
+| Layer | Verb | Scope (set by the active stage / routing matrix) |
+|-------|------|--------------------------------------------------|
+| L0 | READ | all of L0, **pinned** for the whole run |
+| L1 | READ | the routing matrix; consulted in `ROUTING` and on each transition |
+| L2 | READ | **only** the active stage's `CONTRACT.md` (never a sibling stage's) |
+| L3 | FETCH | **only** the reference bindings the routing matrix bound to the active stage — no ambient/global fetch |
+| L4 | READ / WRITE | READ: prior artifacts named in the active stage's `Inputs`; WRITE: **only** the active stage's own output area |
+
+### 3.4 Why this yields the mechanism of §0.3
+
+- **WRITE confined to L4** → all mutable state is localized and auditable; the
+  model cannot corrupt its own identity, routing, or knowledge. *(Formalized as
+  INV-2, §5.)*
+- **L3 FETCH-only** → knowledge enters as small, exact chunks instead of whole
+  documents, which is the core of context minimality. *(INV-3, §5.)*
+- **L2 read scoped to the active stage** → the model never sees sibling stages'
+  internals, so it cannot conflate jobs. *(INV-4, §5.)*
+- **L0 pinned & immutable** → stable constraints without re-reading, spending no
+  per-step context budget on identity.
+
+Together these keep `C_active` minimal and pristine, which §0.3 identifies as the
+lever behind the multiplier `μ`.
 
 ## 4. The ICM State Machine
 

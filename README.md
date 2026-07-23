@@ -1,12 +1,15 @@
 # Animus Dark Matter
 
-### Local Intelligence Multiplier (LIM) — folder-structure agent architecture for small local models
+### The MCP knowledge layer for ICM agents — Ferric-native and standalone
 
-Dark Matter turns a static local directory tree into a physical **state machine**
-(the *Interpretable Context Methodology*, ICM) and serves domain knowledge from a
-stdio **MCP** vault. By keeping knowledge retrieval and state-tracking *out* of a
-model's weights and *out* of its active context window, it lets a small local
-model (e.g. Llama-3-8B, Qwen-2.5-7B) reason well above its weight class.
+Dark Matter is the **knowledge layer** that lets a small local model
+(e.g. Llama-3-8B, Qwen-2.5-7B) reason above its weight class: it serves domain
+knowledge from a stdio **MCP** vault so only the *exact chunk* a step needs enters
+context, keeping the window pristine. It plugs into an **ICM runtime** — the
+*Interpretable Context Methodology* filesystem state machine, implemented by
+[Animus Ferric](https://github.com/crussella0129/Animus_Ferric) — or serves any
+MCP-client agent standalone. DM builds the knowledge layer; the runtime is
+Ferric's (see [`SPEC.md` §11](./SPEC.md) and [`INTEGRATION.md`](./INTEGRATION.md)).
 
 ```text
 [ LOCAL MODEL CONTEXT BOUNDARY ]
@@ -37,36 +40,40 @@ treatment in [`SPEC.md` §0.4](./SPEC.md).)
 
 ## How it works
 
-- **The ICM engine (state machine).** The folder hierarchy enforces operational
-  isolation. The model cannot fuse intent-parsing, doc-fetching, and code
-  generation into one overloaded prompt; it advances through discrete stages,
-  and context is **flushed on every transition** (except the pinned identity),
-  keeping the window pristine.
-- **The MCP layer (knowledge vault).** Documentation is mirrored as clean,
-  chunked markdown and exposed over a stdio MCP server — reference chunks as
-  cacheable **Resources**, plus one `fetch_isolated_context` search Tool. Only
-  the exact chunk a step needs ever enters context: near-zero token bloat.
-- **External enforcement.** Isolation is enforced by a **harness**, not by asking
-  the model to behave. The model is reduced to three actions
-  (`write→L4`, `fetch→L3`, `stage-complete`); anything else has no verb to
-  invoke. Isolation correctness is therefore **decoupled from model capability**
-  — a weaker model is less capable, never less safe.
+- **The ICM runtime (Ferric).** A folder hierarchy is a state machine: the model
+  advances through isolated stages — one job each — with context **flushed on
+  every transition** (except pinned identity). Enforcement is external: the model
+  is reduced to a few actions and *physically cannot* escape its layer (Ferric's
+  `ferric-guard` + constrained loop). DM does **not** build this — it formalizes
+  it (SPEC §3–§5, §7) and rides it.
+- **The knowledge layer (Dark Matter's build).** Documentation is mirrored as
+  clean, chunked markdown and served over MCP — reference chunks as cacheable
+  **Resources** plus one `fetch_isolated_context` / `fetch_reference` tool. Only
+  the exact chunk a step needs ever enters context: near-zero token bloat. It
+  replaces the runtime's habit of folding whole reference files into the prompt.
+- **Two surfaces, one store.** The same vault is a **Ferric built-in tool**
+  (bolt-on) *and* a **standalone MCP server** (any MCP-client agent) — see
+  [`INTEGRATION.md`](./INTEGRATION.md).
 
 ## Status
 
 | Phase | Deliverable | State |
 |-------|-------------|-------|
-| **s0** | Formal specification, provenance, ADRs, scaffold, verifier | ✅ this repo |
-| **s1** | Rust stdio MCP server + `mirror` ingestion + enforcement harness | ⏳ planned |
-| **s2** | Multiplier validation benchmark on a real local model | ⏳ planned |
+| **s0** | Formal specification, provenance, ADRs, scaffold, verifier | ✅ done |
+| **s1** | Re-scope: DM = the knowledge layer for ICM agents; `INTEGRATION.md`; ADRs | ✅ design settled |
+| **s2** | Rust stdio **MCP knowledge server** + `mirror` ingestion (DM's only runtime deliverable) | ⏳ planned |
+| Ferric | `fetch_reference` tool + `compose_stage` change (in `Animus_Ferric`) | ⏳ planned |
 
-The framework is currently a **formalized design**, not yet a runnable system.
+The runtime (ICM state machine, enforcement, constrained loop) is **Ferric's**; DM
+builds the knowledge layer on top. Not yet a runnable system.
 
 ## Documents
 
 - **[`SPEC.md`](./SPEC.md)** — the formal specification: the FSM × capability
-  lattice, the six invariants, the MCP contract, the enforcement model, and a
-  falsifiable validation design.
+  lattice, the six invariants, the MCP contract, the enforcement model, a
+  falsifiable validation design, and §11 (relationship to Ferric).
+- **[`INTEGRATION.md`](./INTEGRATION.md)** — how the knowledge layer plugs into
+  Ferric (the `fetch_reference` tool) and serves any MCP client standalone.
 - **[`PROVENANCE.md`](./PROVENANCE.md)** — credits and attribution.
 - **[`template/MANIFEST.md`](./template/MANIFEST.md)** — an instantiable workspace
   scaffold (the five layers, with a worked example).
@@ -76,9 +83,10 @@ The framework is currently a **formalized design**, not yet a runnable system.
 
 Dark Matter is an **adaptation** of the Interpretable Context Methodology / Model
 Workspace Protocol (Van Clief & McDermott, [arXiv:2603.16021](https://arxiv.org/abs/2603.16021))
-and Anthropic's Model Context Protocol. Its own contributions are the small-local
-re-targeting, the formalization, the MCP hard gate, the external enforcement
-model, and the validation design. See [`PROVENANCE.md`](./PROVENANCE.md).
+and Anthropic's Model Context Protocol. The same ICM paper is independently
+implemented by Ferric's `ferric-icm`; DM **rides that runtime** and its own
+contribution narrows to the **MCP-served knowledge layer** (§6). See
+[`PROVENANCE.md`](./PROVENANCE.md).
 
 ---
 

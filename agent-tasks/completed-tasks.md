@@ -101,3 +101,9 @@
 - **Completed:** 2026-07-23T15:45:27Z
 - **Files modified:** decisions.md, PROVENANCE.md
 - **Commit:** `ed8e944`
+
+## T-105 (sprint 1)
+- **Description:** README.md reposition — subtitle/intro now "the MCP knowledge layer for ICM agents (Ferric-native and standalone)"; How-it-works split into ICM-runtime-is-Ferric vs knowledge-layer-is-DM + two-surfaces; status table updated (s0 done, s1 design settled, s2 = build MCP knowledge server, Ferric row for fetch_reference/compose_stage); added INTEGRATION.md to Documents; provenance now says DM rides Ferric's runtime (contribution = knowledge layer).
+- **Completed:** 2026-07-23T18:50:17Z
+- **Files modified:** README.md
+- **Commit:** `3c15472`

@@ -1,8 +1,14 @@
 # Animus Dark Matter — Local Intelligence Multiplier (LIM): Formal Specification
 
-**Status:** Draft v0 (sprint s0 — formalization). Runtime implementation is
-scheduled for s1; empirical validation for s2. This document is normative for
-the framework's *design*; §10 tracks what is deferred.
+**Status:** Draft v1 (sprint s1 — re-scoped). This document is normative for the
+framework's *design*; §10 tracks what is deferred.
+
+> **Scope (s1).** Dark Matter builds the **knowledge layer** (§6) + its ingestion
+> pipeline. It does **not** build a runtime: the ICM state machine (§3–§4), its
+> invariants (§5), and their enforcement (§7) are **implemented by Ferric**
+> (`ferric-icm` / `ferric-guard` / `ferric-loop`) or any conforming ICM agent.
+> §3–§5 and §7 *formalize what that runtime enforces* — they are not a build
+> target for DM. See §11 (Relationship to Ferric).
 
 **Contents**
 
@@ -17,6 +23,7 @@ the framework's *design*; §10 tracks what is deferred.
 - [8. Canonical Directory Layout](#8-canonical-directory-layout)
 - [9. Validation Design — Measuring the Multiplier](#9-validation-design--measuring-the-multiplier)
 - [10. Roadmap & Open Questions](#10-roadmap--open-questions)
+- [11. Relationship to Ferric (Reference Implementation)](#11-relationship-to-ferric-reference-implementation)
 
 ---
 
@@ -200,6 +207,8 @@ the human-inspectable filesystem *is* the control surface.
 
 ## 3. The Layer Model — a Capability Lattice
 
+> _Formalized here; **enforced by the runtime** (Ferric or any ICM agent) — see §11._
+
 The framework has **two orthogonal axes**. This section defines the first: the
 **layer** axis — *what the model is allowed to touch* — as a capability lattice.
 The second, the **stage** axis — *where in the workflow the model is* — is the
@@ -278,6 +287,8 @@ Together these keep `C_active` minimal and pristine, which §0.3 identifies as t
 lever behind the multiplier `μ`.
 
 ## 4. The ICM State Machine
+
+> _Formalized here; **enforced by the runtime** (Ferric or any ICM agent) — see §11._
 
 The **stage** axis (the second of the two axes from §3) is a finite state
 machine. Where the source ICM paper *"lacks rigorous state-machine notation,"*
@@ -385,6 +396,8 @@ stateDiagram-v2
 states are exactly `Σ` (§4.2): `IDENTITY`, `ROUTING`, the stages, and `DONE`.
 
 ## 5. Invariants
+
+> _Formalized here; **enforced by the runtime** (Ferric or any ICM agent) — see §11._
 
 A conforming implementation must uphold the following six invariants. Each is
 stated as a **mechanically checkable condition**: an observer with access to the
@@ -534,6 +547,8 @@ to s1**; only its contract is fixed here so §6's Resources have a defined sourc
 Implementation of `mirror` (and the server itself) is s1 (§10).
 
 ## 7. The Enforcement Model
+
+> _Formalized here; **enforced by the runtime** (Ferric or any ICM agent) — see §11._
 
 ### 7.1 The principle: "physically cannot," not "must not"
 
@@ -731,3 +746,35 @@ could sink A1 for reasons unrelated to the thesis).
   general the framework is.
 - **Q6.** Recovery beyond escalation (§4.5): partial re-planning of a stuck stage
   vs. full human hand-off.
+
+## 11. Relationship to Ferric (Reference Implementation)
+
+The ICM state machine (§3–§4), its invariants (§5), and their enforcement (§7)
+are neither hypothetical nor DM's to build: they are already implemented — and
+shown to work with small local models — by **Animus Ferric**
+(`github.com/crussella0129/Animus_Ferric`). This section maps the spec onto that
+reference implementation.
+
+| Spec | Ferric reference implementation |
+|------|---------------------------------|
+| §3 layer model + §4 ICM state machine | `ferric-icm` (ADR-064): the same five layers (identity/routing/stages/reference/working), `parse_contract` (Inputs·Process·Outputs), `compose_stage`, workspace discovery + scaffold |
+| §5 invariants + §7 enforcement | `ferric-guard` workspace-boundary containment (the model cannot read/write outside the workspace; `.ferric/` is write-denied) + the constrained loop — this *is* the "physically cannot, not must not" of §7.1 |
+| §6 action interface (constrained emission) | `ferric-loop` `ConstrainedJson`: a `{thought, tool, args}` JSON-Schema (`anyOf` per tool + `task_complete`), enforced **inside llama.cpp** (llguidance) via the OpenAI-compatible HTTP valve (`ferric server` → `llama-server`/Ollama on 127.0.0.1, ADR-005) |
+| stdio MCP surface | `ferric mcp` already exposes the agent as an MCP tool (`ferric_query`, ADR-046) |
+
+**What the reference implementation genuinely lacks — and is therefore DM's build
+(§6):** `ferric-icm` reads L3 `references/` **directly** and folds whole files into
+the composed prompt. DM replaces that with the **on-demand, cached, MCP-served
+knowledge layer** of §6 — fetch the exact chunk a step needs, not the whole
+document. That is the token-minimality mechanism (INV-5, §0.3) made real, and it
+is the one part Ferric does not have.
+
+DM therefore ships **only the knowledge layer + its ingestion pipeline** (§6,
+§6.5), exposed over MCP so it serves **both** Ferric (as a bolt-on) **and** any
+other MCP-client agent (standalone). The concrete integration — a `fetch_reference`
+tool plus the `compose_stage` change — is specified in
+[`INTEGRATION.md`](./INTEGRATION.md).
+
+So §3–§5 and §7 are the **formal spec the runtime conforms to**, not a competing
+build. Where DM and Ferric describe the same structure, the credit is shared with
+the ICM paper both adapt (see [`PROVENANCE.md`](./PROVENANCE.md)).

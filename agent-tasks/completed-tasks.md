@@ -77,3 +77,9 @@
 - **Completed:** 2026-07-23T14:45:31Z
 - **Files modified:** scripts/verify-spec.sh
 - **Commit:** `a443032`
+
+## T-101 (sprint 1)
+- **Description:** SPEC.md re-scope — added a Scope banner (DM builds the knowledge layer §6 + ingestion; runtime is Ferric/any ICM agent), a §11 "Relationship to Ferric" section mapping §3–§5/§7 onto ferric-icm/ferric-guard/ferric-loop, the §11 ToC entry, and "enforced by the runtime" reframe markers on §3/§4/§5/§7.
+- **Completed:** 2026-07-23T15:26:36Z
+- **Files modified:** SPEC.md
+- **Commit:** `857a47f`

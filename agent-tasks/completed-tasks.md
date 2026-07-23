@@ -71,3 +71,9 @@
 - **Completed:** 2026-07-23T14:41:48Z
 - **Files modified:** README.md
 - **Commit:** `19c1ffa`
+
+## T-013 (sprint 0)
+- **Description:** scripts/verify-spec.sh — mechanical spec/scaffold/ADR coherence verifier (43 checks): SPEC skeleton §0-§10, thesis/glossary, lattice table + single-writable + L3 fetch-only, state set/guards/flush/mermaid, INV-1..6 defined + all INV refs resolve, MCP Resources/Tool/gatekeeper/ingestion, enforcement action-alphabet + write-rejection, §8 layout, §9 arms/falsification, §10 s1/s2, PROVENANCE citations + delta, 5 ADRs + cross-refs, template dirs/files, template==§8, README sections/status/link-resolution. Exits non-zero naming failures; green on finished repo.
+- **Completed:** 2026-07-23T14:45:31Z
+- **Files modified:** scripts/verify-spec.sh
+- **Commit:** `a443032`

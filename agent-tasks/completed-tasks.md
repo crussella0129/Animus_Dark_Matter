@@ -83,3 +83,9 @@
 - **Completed:** 2026-07-23T15:26:36Z
 - **Files modified:** SPEC.md
 - **Commit:** `857a47f`
+
+## T-102 (sprint 1)
+- **Description:** SPEC.md §10 roadmap rewrite — s0 done, s1 re-scope done, s2 = build the Rust MCP knowledge server + mirror ingestion (DM's only runtime deliverable), a coordinated Ferric sprint = fetch_reference tool + compose_stage change, later = validation. Removed the "s1 — runtime / enforcement harness" framing (DM builds no runtime).
+- **Completed:** 2026-07-23T15:28:00Z
+- **Files modified:** SPEC.md
+- **Commit:** `663be26`

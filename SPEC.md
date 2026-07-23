@@ -721,16 +721,22 @@ could sink A1 for reasons unrelated to the thesis).
 ## 10. Roadmap & Open Questions
 
 ### 10.1 Roadmap
-- **s0 (this sprint).** Formalization: this spec, `PROVENANCE.md`, ADRs, the
-  `template/` scaffold, and `verify-spec.sh`.
-- **s1 — runtime.** A Rust stdio **MCP server** (Resources + the
-  `fetch_isolated_context` Tool, §6), the **`mirror`** ingestion pipeline (§6.5),
-  and the **enforcement harness** (§7). Exit smoke E2E: one stage transition with
-  one MCP fetch, invariants observed.
-- **s2 — validation.** Execute the §9 benchmark on a real local model
-  (Ollama / llama.cpp); report `μ̂` and gap-closure; confirm or falsify H1.
-- **later.** Real multi-stage workflows, richer routing, L3 chunking/caching
-  tuning.
+- **s0 — formalization (done).** This spec, `PROVENANCE.md`, ADRs, the `template/`
+  scaffold, and `verify-spec.sh`.
+- **s1 — re-scope (this sprint, done).** Positioned DM as the knowledge layer for
+  ICM agents: §11 (relationship to Ferric), the reframe of §3–§5/§7 as *formalizing
+  what the runtime enforces*, [`INTEGRATION.md`](./INTEGRATION.md), and
+  ADR-0006..0008. **DM no longer builds a runtime.**
+- **s2 — build the knowledge layer.** A Rust stdio **MCP knowledge server**
+  (Resources + the `fetch_isolated_context` Tool, §6) + the **`mirror`** ingestion
+  pipeline (§6.5). This is DM's *only* runtime deliverable — §3–§5/§7 are the
+  runtime's job (Ferric), per §11.
+- **Coordinated Ferric sprint** (`Animus_Ferric`, per `INTEGRATION.md`). Add the
+  `fetch_reference` built-in tool + change `ferric-icm::compose_stage` to fetch L3
+  chunks on demand instead of folding whole `references/` files. First real E2E: a
+  Ferric ICM stage fetching an L3 chunk from the DM knowledge server.
+- **later — validation.** Once integrated, run the §9 multiplier benchmark on a
+  real local model (Ollama / llama.cpp); richer routing; L3 chunking/caching tuning.
 
 ### 10.2 Open questions
 - **Q1 (core risk).** Can a 7–8B model reliably emit the three-action alphabet —

@@ -59,3 +59,9 @@
 - **Completed:** 2026-07-23T14:38:56Z
 - **Files modified:** template/MANIFEST.md, template/03_reference/README.md, template/04_artifacts/.gitkeep, template/{00_identity,01_routing,02_stages/00_example_stage}/.gitkeep
 - **Commit:** `ba48279`
+
+## T-011 (sprint 0)
+- **Description:** Filled the template layer files with a coherent worked example (implement-against-library, the target class T*): L0 00_identity/IDENTITY.md (pinned identity + hard constraints), L1 01_routing/ROUTING.md (routing-matrix format + worked example mapping signature→stages+bindings, INV-6 determinism note), L2 02_stages/00_example_stage/CONTRACT.md (Inputs·Process·Outputs with Outputs as guard G). Removed three placeholder .gitkeeps.
+- **Completed:** 2026-07-23T14:40:23Z
+- **Files modified:** template/00_identity/IDENTITY.md, template/01_routing/ROUTING.md, template/02_stages/00_example_stage/CONTRACT.md (rm .gitkeeps)
+- **Commit:** `e3d2676`

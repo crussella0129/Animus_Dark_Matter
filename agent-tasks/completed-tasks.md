@@ -41,3 +41,9 @@
 - **Completed:** 2026-07-23T14:35:34Z
 - **Files modified:** SPEC.md
 - **Commit:** `cbe94f2`
+
+## T-008 (sprint 0)
+- **Description:** PROVENANCE.md — credits ICM/MWP (arXiv 2603.16021, Van Clief & McDermott) and Anthropic MCP as the two primary sources; lists inherited elements; enumerates DM's six departures in a delta table with SPEC cross-refs; positioning statement + BibTeX citation.
+- **Completed:** 2026-07-23T14:36:18Z
+- **Files modified:** PROVENANCE.md
+- **Commit:** `62a9340`

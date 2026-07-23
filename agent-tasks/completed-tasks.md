@@ -65,3 +65,9 @@
 - **Completed:** 2026-07-23T14:40:23Z
 - **Files modified:** template/00_identity/IDENTITY.md, template/01_routing/ROUTING.md, template/02_stages/00_example_stage/CONTRACT.md (rm .gitkeeps)
 - **Commit:** `e3d2676`
+
+## T-012 (sprint 0)
+- **Description:** Rewrote README.md — kept the pitch + ascii layer diagram, fixed the top run-on, added a "Why Dark Matter" section (the rotation-curve metaphor), a "How it works" section (ICM engine + MCP vault + external enforcement), a status table (s0 done / s1 / s2), a Documents section linking SPEC.md, PROVENANCE.md, template/MANIFEST.md, decisions.md, an ICM/MWP + MCP credit, and an updated Master Framework Prompt (now normative-defers-to-SPEC, Resources + external harness).
+- **Completed:** 2026-07-23T14:41:48Z
+- **Files modified:** README.md
+- **Commit:** `19c1ffa`

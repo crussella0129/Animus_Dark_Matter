@@ -18,8 +18,12 @@ TPL="$ROOT/template"
 
 PASSES=0
 FAILS=0
+SKIPS=0
 pass() { PASSES=$((PASSES + 1)); printf '  ok   %s\n' "$1"; }
 fail() { FAILS=$((FAILS + 1));  printf 'FAIL   %s — %s\n' "$1" "$2"; }
+# A check that could not run. Counted separately: reporting a skip as a pass
+# makes the summary claim verification that never happened.
+skip() { SKIPS=$((SKIPS + 1)); printf ' skip  %s\n' "$1"; }
 
 # has <name> <file> <ERE-pattern> [message]
 has() {
@@ -222,16 +226,52 @@ for cand in "$ROOT/../Animus_Ferric" "/c/Users/charl/Animus_Ferric" "$HOME/Animu
 done
 if [ -n "$FERRIC" ]; then
   fcite_bad=""
-  for f in crates/ferric-icm/src/lib.rs crates/ferric-loop/src/grammar.rs; do
+  for f in crates/ferric-icm/src/lib.rs crates/ferric-loop/src/grammar.rs \
+           crates/ferric-tools/src/builtin/fetch_reference.rs; do
     [ -f "$FERRIC/$f" ] || fcite_bad="$fcite_bad $f"
   done
   [ -z "$fcite_bad" ] && pass "test_ferric_citations_resolve" || fail "test_ferric_citations_resolve" "cited Ferric paths absent:$fcite_bad"
+
+  # The seam itself, not just that files exist.
+  #
+  # This check used to assert only that two Ferric paths were present -- neither
+  # of them the file implementing `fetch_reference` -- so it would have passed
+  # if the tool had never been written. It did, while the two repos disagreed on
+  # the tool's required arguments badly enough that the call in INTEGRATION.md
+  # was rejected outright. Assert the argument set instead.
+  FR="$FERRIC/crates/ferric-tools/src/builtin/fetch_reference.rs"
+  if [ -f "$FR" ]; then
+    schema_bad=""
+    # Read the DECLARATION only, never the test module below it. A grep over the
+    # whole file is satisfied by a test that merely mentions the field name,
+    # which makes the check assert nothing (verified with a negative control).
+    FR_DECL="$(sed '/#\[cfg(test)\]/,$d' "$FR")"
+    for arg in target query section; do
+      printf '%s' "$FR_DECL" | grep -q "\"$arg\"" || schema_bad="$schema_bad $arg"
+    done
+    # DM declares `target` and treats `query` as optional, so Ferric must not
+    # unconditionally require any single argument (SPEC 6.2 / INTEGRATION.md).
+    # `anyOf` is how that is expressed: each selector required only as one
+    # alternative. Note a bare `"required": ["query"]` grep is NOT usable here —
+    # it also matches the legitimate branch inside `anyOf`.
+    printf '%s' "$FR_DECL" | grep -q '"anyOf"' \
+      || schema_bad="$schema_bad no-anyOf(a-single-argument-is-unconditionally-required)"
+    [ -z "$schema_bad" ] \
+      && pass "test_ferric_fetch_reference_schema_matches_integration" \
+      || fail "test_ferric_fetch_reference_schema_matches_integration" "fetch_reference schema diverges:$schema_bad"
+  else
+    fail "test_ferric_fetch_reference_schema_matches_integration" "fetch_reference.rs absent"
+  fi
 else
-  pass "test_ferric_citations_resolve (skipped: Ferric repo not present)"
+  # A check that passes when it cannot run is not a check. If the sibling repo
+  # is missing the honest result is "skipped", and the summary should say so
+  # rather than counting a pass.
+  skip "test_ferric_citations_resolve (Ferric repo not present)"
+  skip "test_ferric_fetch_reference_schema_matches_integration (Ferric repo not present)"
 fi
 
 # ---- summary ----
 echo "-------------------------------------------"
-echo "PASS: $PASSES   FAIL: $FAILS"
+echo "PASS: $PASSES   FAIL: $FAILS   SKIP: $SKIPS"
 if [ "$FAILS" -gt 0 ]; then echo "RESULT: FAIL"; exit 1; fi
 echo "RESULT: PASS (check_verifier_green)"; exit 0

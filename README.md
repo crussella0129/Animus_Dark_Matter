@@ -2,7 +2,7 @@
 
 # Animus Dark Matter
 
-### The MCP knowledge layer for ICM agents — Ferric-native and standalone
+### The MCP knowledge layer for ICM agents — Compatible with Animus_Ferric, or standalone (agent-agnostic)
 
 Dark Matter is the **knowledge layer** that lets a small local model
 (e.g. Llama-3-8B, Qwen-2.5-7B) reason above its weight class: it serves domain

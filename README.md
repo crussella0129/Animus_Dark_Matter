@@ -1,3 +1,5 @@
+![Dark Matter](DarkMatter.jpg)
+
 # Animus Dark Matter
 
 ### The MCP knowledge layer for ICM agents — Ferric-native and standalone
